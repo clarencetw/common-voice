@@ -34,7 +34,7 @@ async function fetchPontoonLanguages() {
   const response = await fetch(url);
   const { data } = await response.json();
 
-  return data.project.localizations
+  const f = data.project.localizations
     .map(({ totalStrings, approvedStrings, locale }) => ({
       code: locale.code,
       name: locale.name,
@@ -43,6 +43,8 @@ async function fetchPontoonLanguages() {
     }))
     .concat({ code: 'en', name: 'English', translated: 1, direction: 'LTR' })
     .sort((l1, l2) => l1.code.localeCompare(l2.code));
+
+  return f.filter(local => { if (local.code === 'en' || local.code === 'nan-tw' || local.code === 'zh-TW') return local })
 }
 
 async function saveToMessages(languages) {
@@ -125,12 +127,12 @@ async function importContributableLocales(locales) {
         (count, sentencesFile) =>
           sentencesFile.endsWith('.txt')
             ? count +
-              fs
-                .readFileSync(
-                  path.join(localeSentencesPath, sentencesFile),
-                  'utf-8'
-                )
-                .split('\n').length
+            fs
+              .readFileSync(
+                path.join(localeSentencesPath, sentencesFile),
+                'utf-8'
+              )
+              .split('\n').length
             : count,
         0
       );
